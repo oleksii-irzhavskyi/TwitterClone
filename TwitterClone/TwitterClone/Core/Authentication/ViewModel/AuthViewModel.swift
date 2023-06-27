@@ -40,7 +40,7 @@ class AuthViewModel: ObservableObject {
                 return
             }
             
-            guard let user = result?.user else {return}
+            guard let user = result?.user else { return }
             //self.userSession = user
             self.tempUserSession = user
             
@@ -53,6 +53,7 @@ class AuthViewModel: ObservableObject {
                 .document(user.uid)
                 .setData(data) { _ in
                     self.didAuthenticateUser = true
+                    print("true")
                 }
             
         }

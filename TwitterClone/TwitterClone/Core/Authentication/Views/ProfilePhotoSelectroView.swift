@@ -18,26 +18,17 @@ struct ProfilePhotoSelectroView: View {
                            title2: "Select a profile photo")
             
             Button {
-                print("Pick image here...")
+                showImagePicker.toggle()
             } label: {
                 if let profileImage = profileImage {
                     profileImage
                         .resizable()
-                        .renderingMode(.template)
-                        .foregroundColor(Color(.systemBlue))
-                        .scaledToFill()
-                        .frame(width: 180, height: 180)
-                        .padding(.top, 40)
-                        .clipShape(Circle())
+                        .modifier(ProfileImageModifier())
                 } else {
                     Image(systemName: "plus.circle")
                         .resizable()
                         .renderingMode(.template)
-                        .foregroundColor(Color(.systemBlue))
-                        .scaledToFill()
-                        .frame(width: 180, height: 180)
-                        .padding(.top, 40)
-                        .clipShape(Circle())
+                        .modifier(ProfileImageModifier())
                 }
                 
             }
@@ -45,6 +36,7 @@ struct ProfilePhotoSelectroView: View {
                    onDismiss: loadImage) {
                 ImagePicker(selectedImage: $selectedImage)
             }
+                   .padding(.top, 44)
             
             if let selectedImage = selectedImage {
                 Button {
@@ -72,19 +64,19 @@ struct ProfilePhotoSelectroView: View {
         profileImage = Image(uiImage: selectedImage)
     }
 }
-//
-//private struct ProfileImageModifier: ViewModifier {
-//    func body(content: Content) -> some View {
-//        content
-//            .resizable()
-//            .renderingMode(.template)
-//            .foregroundColor(Color(.systemBlue))
-//            .scaledToFill()
-//            .frame(width: 180, height: 180)
-//            .padding(.top, 40)
-//            .clipShape(Circle())
-//    }
-//}
+
+private struct ProfileImageModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            //.resizable()
+            //.renderingMode(.template)
+            .foregroundColor(Color(.systemBlue))
+            .scaledToFill()
+            .frame(width: 180, height: 180)
+            //.padding(.top, 40)
+            .clipShape(Circle())
+    }
+}
 
 struct ProfilePhotoSelectroView_Previews: PreviewProvider {
     static var previews: some View {
