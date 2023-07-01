@@ -10,12 +10,12 @@ import Kingfisher
 
 struct ProfileView: View {
     @State private var selectedFilter: TweetFilterViewModel = .tweets
+    @ObservedObject var viewModel: ProfileViewModel
     @Environment(\.presentationMode) var mode
     @Namespace var animation
-    private let user: User
     
     init(user: User) {
-        self.user = user
+        self.viewModel = ProfileViewModel(user: user)
     }
     
     var body: some View {
@@ -64,7 +64,7 @@ extension ProfileView {
                         .offset(x: 16, y: -4)
                 }
                 
-                KFImage(URL(string: user.profileImageUrl))
+                KFImage(URL(string: viewModel.user.profileImageUrl))
                     .resizable()
                     .scaledToFill()
                     .clipShape(Circle())
@@ -87,7 +87,7 @@ extension ProfileView {
             Button {
                 
             } label: {
-                Text("Edit profile")
+                Text(viewModel.actionButtonTitle)
                     .font(.subheadline).bold()
                     .frame(width: 120, height: 32)
                     .foregroundColor(.black)
@@ -101,14 +101,14 @@ extension ProfileView {
     var userInfoDetails: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(user.fullname)
+                Text(viewModel.user.fullname)
                     .font(.title2).bold()
                 
                 Image(systemName: "checkmark.seal.fill")
                     .foregroundColor(Color(.systemBlue))
             }
             
-            Text("@\(user.username)")
+            Text("@\(viewModel.user.username)")
                 .font(.subheadline)
                 .foregroundColor(.gray)
             
@@ -172,11 +172,15 @@ extension ProfileView {
     var tweetsView: some View {
         ScrollView {
             LazyVStack {
-                ForEach(0 ... 9, id: \.self) { _ in
-                    TweetRowView()
+                ForEach(viewModel.tweets(forFilter: self.selectedFilter)) { tweet in
+                    TweetRowView(tweet: tweet)
                         .padding()
                 }
             }
+        }
+        .refreshable {
+            viewModel.fetchUserTweets()
+            viewModel.fetchLikedTweets()
         }
     }
 }
