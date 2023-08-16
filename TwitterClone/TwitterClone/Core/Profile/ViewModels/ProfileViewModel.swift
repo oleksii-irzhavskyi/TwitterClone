@@ -10,6 +10,7 @@ import Foundation
 class ProfileViewModel: ObservableObject {
     @Published var tweets = [Tweet]()
     @Published var likedTweets = [Tweet]()
+    @Published var repliedTweets = [Tweet]()
     
     private let service = TweetService()
     private let userService = UserService()
@@ -19,6 +20,7 @@ class ProfileViewModel: ObservableObject {
         self.user = user
         self.fetchUserTweets()
         self.fetchLikedTweets()
+        self.fetchRepliedTweets()
     }
     
     var actionButtonTitle: String {
@@ -30,7 +32,7 @@ class ProfileViewModel: ObservableObject {
         case .tweets:
             return tweets
         case .replies:
-            return tweets
+            return repliedTweets
         case .likes:
             return likedTweets
         }
@@ -59,6 +61,22 @@ class ProfileViewModel: ObservableObject {
                 
                 self.userService.fetchUser(withUid: uid) { user in
                     self.likedTweets[i].user = user
+                }
+            }
+        }
+    }
+    
+    func fetchRepliedTweets() {
+        guard let uid = user.id else { return }
+        
+        service.fetchRepliedTweets(forUid: uid) { tweets in
+            self.repliedTweets = tweets
+            
+            for i in 0 ..< tweets.count {
+                let uid = tweets[i].uid
+                
+                self.userService.fetchUser(withUid: uid) { user in
+                    self.repliedTweets[i].user = user
                 }
             }
         }

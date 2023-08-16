@@ -15,6 +15,7 @@ struct TweetService {
         let data = ["uid": uid,
                     "caption": caption,
                     "likes": 0,
+                    "replies": 0,
                     "timestamp": Timestamp(date: Date())] as [String: Any]
         
         Firestore.firestore().collection("tweets").document()
@@ -52,6 +53,74 @@ struct TweetService {
     }
 }
 
+//MARK: - Replie/Unreplie
+extension TweetService {
+    func replieTweet(_ tweet: Tweet, completion: @escaping() -> Void) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        guard let tweetId = tweet.id else { return }
+        
+        let userReplieRef = Firestore.firestore().collection("users").document(uid).collection("user-replies")
+        
+        Firestore.firestore().collection("tweets").document(tweetId)
+            .updateData(["replies": tweet.replies + 1]) { _ in
+                userReplieRef.document(tweetId).setData([:]) { _ in
+                    completion()
+                }
+            }
+    }
+    
+    func unreplieTweet(_ tweet: Tweet, completion: @escaping() -> Void) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        guard let tweetId = tweet.id else { return }
+        guard tweet.replies > 0 else { return }
+        
+        let userRepliesRef = Firestore.firestore().collection("users").document(uid).collection("user-replies")
+        
+        Firestore.firestore().collection("tweets").document(tweetId)
+            .updateData(["replies": tweet.replies - 1]) { _ in
+                userRepliesRef.document(tweetId).delete { _ in
+                    completion()
+                }
+            }
+    }
+    
+    func checkIfUserRepliedTweet(_ tweet: Tweet, completion: @escaping(Bool) -> Void) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        guard let tweetId = tweet.id else { return }
+        
+        Firestore.firestore().collection("users")
+            .document(uid)
+            .collection("user-replies")
+            .document(tweetId).getDocument { snapshot, _ in
+                guard let snapshot = snapshot else { return }
+                completion(snapshot.exists)
+            }
+    }
+    
+    func fetchRepliedTweets(forUid uid: String, completion: @escaping([Tweet]) -> Void) {
+        var tweets = [Tweet]()
+        
+        Firestore.firestore().collection("users")
+            .document(uid)
+            .collection("user-replies")
+            .getDocuments { snapshot, _ in
+                guard let documents = snapshot?.documents else { return }
+                
+                documents.forEach { doc in
+                    let tweetID = doc.documentID
+                    
+                    Firestore.firestore().collection("tweets")
+                        .document(tweetID)
+                        .getDocument { snapshot, _ in
+                            guard let tweet = try? snapshot?.data(as: Tweet.self) else { return }
+                            tweets.append(tweet)
+                            
+                            completion(tweets)
+                        }
+                }
+            }
+    }
+}
 //MARK: - Like/Unlike
 extension TweetService {
     func likeTweet(_ tweet: Tweet, completion: @escaping() -> Void) {

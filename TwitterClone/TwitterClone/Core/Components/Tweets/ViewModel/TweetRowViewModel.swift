@@ -14,6 +14,7 @@ class TweetRowViewModel: ObservableObject {
     init(tweet: Tweet) {
         self.tweet = tweet
         checkIfUserLikedTweet()
+        checkIfUserRepliedTweet()
     }
     
     
@@ -33,6 +34,26 @@ class TweetRowViewModel: ObservableObject {
         service.checkIfUserLikedTweet(tweet) { didLike in
             if didLike {
                 self.tweet.didLike = true
+            }
+        }
+    }
+    
+    func replieTweet() {
+        service.replieTweet(tweet) {
+            self.tweet.didReplie = true
+        }
+    }
+    
+    func unreplieTweet() {
+        service.unreplieTweet(tweet) {
+            self.tweet.didReplie = false
+        }
+    }
+    
+    func checkIfUserRepliedTweet() {
+        service.checkIfUserRepliedTweet(tweet) { didReplie in
+            if didReplie {
+                self.tweet.didReplie = true
             }
         }
     }

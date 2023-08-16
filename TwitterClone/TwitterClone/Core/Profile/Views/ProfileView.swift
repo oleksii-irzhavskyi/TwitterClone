@@ -181,6 +181,7 @@ extension ProfileView {
         .refreshable {
             viewModel.fetchUserTweets()
             viewModel.fetchLikedTweets()
+            viewModel.fetchRepliedTweets()
         }
     }
 }

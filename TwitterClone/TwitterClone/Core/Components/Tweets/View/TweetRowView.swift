@@ -63,10 +63,11 @@ struct TweetRowView: View {
                 Spacer()
                 
                 Button {
-                    //action
+                    viewModel.tweet.didReplie ?? false ? viewModel.unreplieTweet() : viewModel.replieTweet()
                 } label: {
                     Image(systemName: "arrow.2.squarepath")
                         .font(.subheadline)
+                        .foregroundColor(viewModel.tweet.didReplie ?? false ? .blue : .gray)
                 }
                 
                 Spacer()
